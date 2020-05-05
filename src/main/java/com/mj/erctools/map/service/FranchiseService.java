@@ -50,7 +50,7 @@ public class FranchiseService {
         entity.setPhoneNumber(info.getPhoneNumber());
         entity.setLatitude(info.getLatitude());
         entity.setLongitude(info.getLongitude());
-        entity.setStatus("01");
+        entity.setStatus(info.getStatus());
         entity.setMemo(info.getMemo());
         franchiseRepository.save(entity);
     }
@@ -60,7 +60,7 @@ public class FranchiseService {
         Iterable<FranchiseEntity> entities = franchiseRepository.findAll();
 
         entities.forEach(entity -> {
-            result.add(new FranchiseInfo(entity.getName(), entity.getRoadAddress(), entity.getJibunAddress(), entity.getPhoneNumber(), entity.getLatitude(), entity.getLongitude(), entity.getMemo()));
+            result.add(new FranchiseInfo(entity.getName(), entity.getRoadAddress(), entity.getJibunAddress(), entity.getPhoneNumber(), entity.getLatitude(), entity.getLongitude(), entity.getMemo(), entity.getStatus()));
         });
 
         log.info("[All Franchise Info] Count : {}", result.size());

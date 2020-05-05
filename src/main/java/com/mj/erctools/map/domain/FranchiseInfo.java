@@ -15,4 +15,5 @@ public class FranchiseInfo {
     private Double latitude;
     private Double longitude;
     private String memo;
+    private String status;
 }
