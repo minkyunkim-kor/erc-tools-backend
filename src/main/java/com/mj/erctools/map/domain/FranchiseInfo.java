@@ -14,4 +14,5 @@ public class FranchiseInfo {
     private String phoneNumber;
     private Double latitude;
     private Double longitude;
+    private String memo;
 }

@@ -20,4 +20,5 @@ public class FranchiseEntity {
     private String status;
     private Double latitude;
     private Double longitude;
+    private String memo;
 }
