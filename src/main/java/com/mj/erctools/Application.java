@@ -1,5 +1,6 @@
 package com.mj.erctools;
 
+import com.mj.erctools.util.AES;
 import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.springframework.boot.SpringApplication;
