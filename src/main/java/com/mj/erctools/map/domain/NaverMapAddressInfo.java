@@ -32,9 +32,17 @@ public class NaverMapAddressInfo {
     @Getter
     @Setter
     public static class AddressInfo {
-        private String roadAddress;
-        private String jibunAddress;
+        private List<AddressElement> addressElements;
         private Double x;
         private Double y;
+    }
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public static class AddressElement {
+        private List<String> types;
+        private String longName;
     }
 }

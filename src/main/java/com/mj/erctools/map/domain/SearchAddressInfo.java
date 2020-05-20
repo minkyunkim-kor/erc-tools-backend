@@ -13,6 +13,7 @@ import java.util.List;
 @Setter
 public class SearchAddressInfo {
 
+    private String message;
     private String size;
     private List<AddressDetail> details;
 
@@ -23,7 +24,8 @@ public class SearchAddressInfo {
     @Override
     public String toString() {
         return "SearchAddressInfo{" +
-                "size=" + size +
+                "message='" + message + '\'' +
+                ", size='" + size + '\'' +
                 ", details=" + details +
                 '}';
     }
@@ -33,16 +35,14 @@ public class SearchAddressInfo {
     @Getter
     @Setter
     public static class AddressDetail {
-        private String road;
-        private String jibun;
+        private String address;
         private Double longitude;   // 경도 (x)
         private Double latitude;    // 위도 (y)
 
         @Override
         public String toString() {
             return "AddressDetail{" +
-                    "road='" + road + '\'' +
-                    ", jibun='" + jibun + '\'' +
+                    "address='" + address + '\'' +
                     ", longitude=" + longitude +
                     ", latitude=" + latitude +
                     '}';

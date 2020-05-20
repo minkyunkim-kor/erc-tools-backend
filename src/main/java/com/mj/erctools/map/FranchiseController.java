@@ -1,6 +1,6 @@
 package com.mj.erctools.map;
 
-import com.mj.erctools.map.domain.FranchiseInfo;
+import com.mj.erctools.map.domain.LocationInfo;
 import com.mj.erctools.map.domain.SearchAddressInfo;
 import com.mj.erctools.map.service.FranchiseService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,27 +19,44 @@ public class FranchiseController {
     FranchiseService service;
 
     @GetMapping("/address")
-    public ResponseEntity<SearchAddressInfo> searchAddress( @RequestParam("query") String query ) {
-        log.info("[Search Address] Query : {}", query);
-        return ResponseEntity.ok(service.search(query));
+    public ResponseEntity<SearchAddressInfo> searchAddress(
+            @RequestHeader("token") String token,
+            @RequestParam("query") String query ) {
+        log.info("[Search Address] Token : {}, Query : {}", token, query);
+        return ResponseEntity.ok(service.search(token, query));
     }
 
-    @PostMapping("/franchises")
-    public ResponseEntity<Void> saveFranchise(@RequestBody final FranchiseInfo info) {
-        log.info("[Save or Update Franchise] info : {}", info.toString());
-        service.saveOrUpdate(info);
-        return new ResponseEntity<>(HttpStatus.OK);
+    @PostMapping("/location")
+    public ResponseEntity<Void> saveLocations(
+            @RequestHeader("token") String token,
+            @RequestBody final LocationInfo info) throws Exception {
+        log.info("[Save or Update Location] info : {}", info.toString());
+        boolean result = service.saveLocation(token, info);
+        if (result) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
     }
 
-    @GetMapping("/franchises")
-    public ResponseEntity<List<FranchiseInfo>> getAllFranchises() {
-        return ResponseEntity.ok(service.getAllFranchise());
+    @GetMapping("/location")
+    public ResponseEntity<List<LocationInfo>> getAllLocations(@RequestHeader("token") String token) throws Exception {
+        List<LocationInfo> results = service.getAllLocationInfo(token);
+        if (null == results) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        } else {
+            return ResponseEntity.ok(results);
+        }
     }
 
-    @DeleteMapping("/franchises")
-    public ResponseEntity<Void> deleteFranchise(@RequestParam("name") String name) {
-        log.info("[Delete Franchise] name : {}", name);
-        service.deleteFranchiseInfo(name);
-        return new ResponseEntity<>(HttpStatus.OK);
+    @DeleteMapping("/location")
+    public ResponseEntity<Void> deleteLocation(@RequestHeader("token") String token, @RequestParam("name") String name) {
+        log.info("[Delete Location] name : {}", name);
+        boolean result = service.deleteLocationInfo(token, name);
+        if (result) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
     }
 }

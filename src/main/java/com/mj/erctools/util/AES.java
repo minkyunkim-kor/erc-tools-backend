@@ -21,6 +21,9 @@ public class AES {
     private String iv;
     private Key keySpec;
 
+    private String frontIv;
+    private Key keySpecFront;
+
     public AES() throws UnsupportedEncodingException {
         this.iv = key.substring(0, 16);
         byte[] keyBytes = new byte[16];
@@ -33,19 +36,21 @@ public class AES {
         SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
 
         this.keySpec = keySpec;
+
+        this.frontIv = frontendKey.substring(0, 16);
+        byte[] frontKeyBytes = new byte[16];
+        byte[] fb = key.getBytes("UTF-8");
+        int fb_len = fb.length;
+        if (fb_len > frontKeyBytes.length) {
+            fb_len = frontKeyBytes.length;
+        }
+        System.arraycopy(b, 0, frontKeyBytes, 0, fb_len);
+        SecretKeySpec keySpecFront = new SecretKeySpec(frontKeyBytes, "AES");
+
+        this.keySpecFront = keySpecFront;
     }
 
-    /**
-     * AES256 으로 암호화 한다.
-     *
-     * @param str 암호화할 문자열
-     * @return
-     * @throws NoSuchAlgorithmException
-     * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
-     */
-    public String encrypt(String str) throws NoSuchAlgorithmException,
-            GeneralSecurityException, UnsupportedEncodingException {
+    public String encrypt(String str) throws GeneralSecurityException, UnsupportedEncodingException {
         Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
         c.init(Cipher.ENCRYPT_MODE, keySpec, new IvParameterSpec(iv.getBytes()));
         byte[] encrypted = c.doFinal(str.getBytes("UTF-8"));
@@ -53,21 +58,21 @@ public class AES {
         return enStr;
     }
 
-    /**
-     * AES256으로 암호화된 txt 를 복호화한다.
-     *
-     * @param str 복호화할 문자열
-     * @return
-     * @throws NoSuchAlgorithmException
-     * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
-     */
     public String decrypt(String str) throws NoSuchAlgorithmException,
             GeneralSecurityException, UnsupportedEncodingException {
         Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
         c.init(Cipher.DECRYPT_MODE, keySpec, new IvParameterSpec(iv.getBytes()));
         byte[] byteStr = Base64.decodeBase64(str.getBytes());
         return new String(c.doFinal(byteStr), "UTF-8");
+    }
+
+    public String encryptFrontAes(String str) throws GeneralSecurityException, UnsupportedEncodingException {
+        Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        c.init(Cipher.ENCRYPT_MODE, keySpecFront, new IvParameterSpec(frontIv.getBytes()));
+        byte[] encrypted = c.doFinal(str.getBytes("UTF-8"));
+        String enStr = new String(Base64.encodeBase64(encrypted));
+        return enStr;
+
     }
 
     public String decryptFrontAes(String str) {
@@ -82,7 +87,6 @@ public class AES {
 
             // 솔트를 구한다. (생략된 8비트는 Salted__ 시작되는 문자열이다.)
             byte[] saltBytes = Arrays.copyOfRange(ctBytes, 8, 16);
-            System.out.println( Hex.encodeHexString(saltBytes) );
 
             // 암호화된 테스트를 구한다.( 솔트값 이후가 암호화된 텍스트 값이다.)
             byte[] ciphertextBytes = Arrays.copyOfRange(ctBytes, 16, ctBytes.length);

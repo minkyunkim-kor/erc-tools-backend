@@ -1,10 +1,12 @@
 package com.mj.erctools.map.service;
 
 import com.mj.erctools.map.domain.*;
+import com.mj.erctools.users.model.UserEntity;
+import com.mj.erctools.users.model.UserRepository;
+import com.mj.erctools.util.AES;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,12 +15,20 @@ import java.util.List;
 public class FranchiseService {
 
     @Autowired
-    private FranchiseRepository franchiseRepository;
+    private LocationRepository locationRepository;
 
     @Autowired
     private NaverMapApi naverMapApi;
 
-    public SearchAddressInfo search(String query) {
+    @Autowired
+    private UserRepository userRepository;
+
+    public SearchAddressInfo search(String token, String query) {
+        UserEntity user = userRepository.findByToken(token);
+        if (null == user) {
+            return new SearchAddressInfo("유효하지 않은 접근입니다.", "0", new ArrayList<>());
+        }
+
         NaverMapAddressInfo naverMapAddressInfo = naverMapApi.getAddressInfo(query);
         SearchAddressInfo response = new SearchAddressInfo();
 
@@ -26,8 +36,7 @@ public class FranchiseService {
             response.setSize(naverMapAddressInfo.getMeta().getTotalCount().toString());
             for (NaverMapAddressInfo.AddressInfo addressInfo : naverMapAddressInfo.getAddresses()) {
                 SearchAddressInfo.AddressDetail detail = new SearchAddressInfo.AddressDetail();
-                detail.setRoad(addressInfo.getRoadAddress());
-                detail.setJibun(addressInfo.getJibunAddress());
+                detail.setAddress(convertAddress(addressInfo.getAddressElements()));
                 detail.setLongitude(addressInfo.getX());
                 detail.setLatitude(addressInfo.getY());
 
@@ -39,35 +48,71 @@ public class FranchiseService {
         return response;
     }
 
-    public void saveOrUpdate(FranchiseInfo info) {
-        FranchiseEntity entity = franchiseRepository.findById(info.getName()).orElse(null);
-        if (null == entity) {
-            entity = new FranchiseEntity();
+    public boolean saveLocation(String token, LocationInfo location) throws Exception {
+        UserEntity user = userRepository.findByToken(token);
+        if (null == user) {
+            return false;
         }
-        entity.setName(info.getName());
-        entity.setRoadAddress(info.getRoad());
-        entity.setJibunAddress(info.getJibun());
-        entity.setPhoneNumber(info.getPhoneNumber());
-        entity.setLatitude(info.getLatitude());
-        entity.setLongitude(info.getLongitude());
-        entity.setStatus(info.getStatus());
-        entity.setMemo(info.getMemo());
-        franchiseRepository.save(entity);
+
+        LocationEntity entity = new LocationEntity(location);
+
+        AES aes = new AES();
+
+        entity.setTeacher(aes.encrypt(aes.decryptFrontAes(entity.getTeacher())));
+        entity.setPhonenumber(aes.encrypt(aes.decryptFrontAes(entity.getPhonenumber())));
+
+        locationRepository.save(entity);
+        return true;
     }
 
-    public List<FranchiseInfo> getAllFranchise() {
-        List<FranchiseInfo> result = new ArrayList<>();
-        Iterable<FranchiseEntity> entities = franchiseRepository.findAll();
+    public List<LocationInfo> getAllLocationInfo(String token) throws Exception {
+        UserEntity user = userRepository.findByToken(token);
+        if (null == user) {
+            return null;
+        }
 
-        entities.forEach(entity -> {
-            result.add(new FranchiseInfo(entity.getName(), entity.getRoadAddress(), entity.getJibunAddress(), entity.getPhoneNumber(), entity.getLatitude(), entity.getLongitude(), entity.getMemo(), entity.getStatus()));
-        });
+        List<LocationInfo> result = new ArrayList<>();
+        Iterable<LocationEntity> entities = locationRepository.findAll();
 
-        log.info("[All Franchise Info] Count : {}", result.size());
+        AES aes = new AES();
+
+        for (LocationEntity entity : entities) {
+            LocationInfo info = new LocationInfo();
+            info.setName(entity.getName());
+            info.setTeacher(aes.encryptFrontAes(aes.decrypt(entity.getTeacher())));
+            info.setAddress(entity.getAddress());
+            info.setPhonenumber(aes.encryptFrontAes(aes.decrypt(entity.getPhonenumber())));
+            info.setStatus(entity.getStatus());
+            info.setDetails(entity.getDetails());
+            info.setLatitude(entity.getLatitude());
+            info.setLongitude(entity.getLongitude());
+
+            result.add(info);
+        }
+
         return result;
     }
 
-    public void deleteFranchiseInfo(String name) {
-        franchiseRepository.deleteById(name);
+    public boolean deleteLocationInfo(String token, String name) {
+        UserEntity user = userRepository.findByToken(token);
+        if (null == user) {
+            return false;
+        }
+        locationRepository.deleteById(name);
+        return true;
+    }
+
+    private String convertAddress(List<NaverMapAddressInfo.AddressElement> elements) {
+        String address = "SIDO SIGUGUN DONGMYUN RI LAND_NUMBER (ROAD_NAME BUILDING_NUMBER) BUILDING_NAME";
+
+        for (NaverMapAddressInfo.AddressElement element : elements) {
+            if (!"".equals(element.getLongName())) {
+                address = address.replace(element.getTypes().get(0), element.getLongName());
+            } else {
+                address = address.replace(element.getTypes().get(0) + " ", "");
+            }
+        }
+
+        return address;
     }
 }
