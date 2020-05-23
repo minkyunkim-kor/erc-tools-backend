@@ -35,9 +35,8 @@ public class UserService {
 
         AES aes = new AES();
 
-        String plainPw = aes.decryptFrontAes(request.getPw());
 
-        UserEntity registerTarget = new UserEntity(request.getId(), aes.encrypt(plainPw), aes.encrypt(request.getName()));
+        UserEntity registerTarget = new UserEntity(request.getId(), aes.encrypt(request.getPw()), aes.encrypt(request.getName()));
         repository.save(registerTarget);
 
         return new EnrollUser(true, null);
@@ -51,10 +50,9 @@ public class UserService {
 
         AES aes = new AES();
 
-        String requestPw = aes.decryptFrontAes(request.getPw());
         String savedPw = aes.decrypt(user.getPassword());
 
-        if (!requestPw.equals(savedPw)) {
+        if (!request.getPw().equals(savedPw)) {
             return new Login(false, null, "비밀번호가 틀렸습니다.");
         }
 
