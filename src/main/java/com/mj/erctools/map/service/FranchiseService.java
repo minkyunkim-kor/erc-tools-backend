@@ -58,8 +58,8 @@ public class FranchiseService {
 
         AES aes = new AES();
 
-        entity.setTeacher(aes.encrypt(aes.decryptFrontAes(entity.getTeacher())));
-        entity.setPhonenumber(aes.encrypt(aes.decryptFrontAes(entity.getPhonenumber())));
+        entity.setTeacher(aes.encrypt(entity.getTeacher()));
+        entity.setPhonenumber(aes.encrypt(entity.getPhonenumber()));
 
         locationRepository.save(entity);
         return true;
@@ -79,9 +79,9 @@ public class FranchiseService {
         for (LocationEntity entity : entities) {
             LocationInfo info = new LocationInfo();
             info.setName(entity.getName());
-            info.setTeacher(aes.encryptFrontAes(aes.decrypt(entity.getTeacher())));
+            info.setTeacher(aes.decrypt(entity.getTeacher()));
             info.setAddress(entity.getAddress());
-            info.setPhonenumber(aes.encryptFrontAes(aes.decrypt(entity.getPhonenumber())));
+            info.setPhonenumber(aes.decrypt(entity.getPhonenumber()));
             info.setStatus(entity.getStatus());
             info.setDetails(entity.getDetails());
             info.setLatitude(entity.getLatitude());
