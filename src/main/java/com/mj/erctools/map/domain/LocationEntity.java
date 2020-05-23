@@ -19,8 +19,8 @@ public class LocationEntity {
     private String phonenumber;
     private String status;
     private String details;
-    private Long latitude;
-    private Long longitude;
+    private Double latitude;
+    private Double longitude;
 
     public LocationEntity(LocationInfo locationInfo) {
         name = locationInfo.getName();
