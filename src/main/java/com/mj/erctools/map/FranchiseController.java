@@ -50,7 +50,7 @@ public class FranchiseController {
     }
 
     @DeleteMapping("/location")
-    public ResponseEntity<Void> deleteLocation(@RequestHeader("token") String token, @RequestHeader("name") String name) {
+    public ResponseEntity<Void> deleteLocation(@RequestHeader("token") String token, @RequestParam("name") String name) {
         log.info("[Delete Location] name : {}", name);
         boolean result = service.deleteLocationInfo(token, name);
         if (result) {
