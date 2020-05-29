@@ -7,6 +7,8 @@ import com.mj.erctools.util.AES;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,8 +100,13 @@ public class FranchiseService {
         if (null == user) {
             return false;
         }
-        locationRepository.deleteById(name);
-        return true;
+        for(LocationEntity locationEntity : locationRepository.findAll()) {
+            if (locationEntity.getName().equals(name)) {
+                locationRepository.delete(locationEntity);
+                return true;
+            }
+        }
+        return false;
     }
 
     private String convertAddress(List<NaverMapAddressInfo.AddressElement> elements) {
