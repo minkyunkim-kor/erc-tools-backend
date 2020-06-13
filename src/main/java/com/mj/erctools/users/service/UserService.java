@@ -58,14 +58,22 @@ public class UserService {
             return new Login(false, null, "비밀번호가 틀렸습니다.");
         }
 
-        String token = UUID.randomUUID().toString();
-        LocalDateTime expiredTime = LocalDateTime.now().plusHours(8);
+        Login login;
+        LocalDateTime now = LocalDateTime.now();
+        if (user.getToken() != null && now.isBefore(user.getTokenExpired())) {
+            login = new Login(true, user.getToken(), null);
+        } else {
+            String token = UUID.randomUUID().toString();
+            LocalDateTime expiredTime = LocalDateTime.now().plusHours(8);
 
-        user.setToken(token);
-        user.setTokenExpired(expiredTime);
+            user.setToken(token);
+            user.setTokenExpired(expiredTime);
 
-        repository.save(user);
+            repository.save(user);
 
-        return new Login(true, token, null);
+            login = new Login(true, token, null);
+        }
+
+        return login;
     }
 }

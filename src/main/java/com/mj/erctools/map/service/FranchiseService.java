@@ -38,7 +38,7 @@ public class FranchiseService {
             response.setSize(naverMapAddressInfo.getMeta().getTotalCount().toString());
             for (NaverMapAddressInfo.AddressInfo addressInfo : naverMapAddressInfo.getAddresses()) {
                 SearchAddressInfo.AddressDetail detail = new SearchAddressInfo.AddressDetail();
-                detail.setAddress(convertAddress(addressInfo.getAddressElements()));
+                detail.setAddress(convertAddress(addressInfo.getAddressElements()).trim());
                 detail.setLongitude(addressInfo.getX());
                 detail.setLatitude(addressInfo.getY());
 
@@ -116,9 +116,11 @@ public class FranchiseService {
             if (!"".equals(element.getLongName())) {
                 address = address.replace(element.getTypes().get(0), element.getLongName());
             } else {
-                address = address.replace(element.getTypes().get(0) + " ", "");
+                address = address.replace(element.getTypes().get(0), "");
             }
         }
+        address = address.replace("  ", " ");
+        address = address.replace("( )", "");
 
         return address;
     }
